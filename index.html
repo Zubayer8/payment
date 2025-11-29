@@ -2,245 +2,72 @@
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>AMAR TAKA</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Payment Gateway</title>
+    <!-- Telegram Web App SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
     <style>
         :root {
-            --font-family: 'Poppins', sans-serif;
-            --primary-color: #E74C3C; --secondary-color: #F39C12;
-            --background-light: #FDFEFE; --surface-light: #FFFFFF; --text-primary-light: #2C3E50; --text-secondary-light: #808B96; --border-light: #EAEDED;
-            --background-dark: #1B2631; --surface-dark: #283747; --text-primary-dark: #FDFEFE; --text-secondary-dark: #ABB2B9; --border-dark: #566573;
-            --success: #27AE60; --danger: #C0392B; --pending: #F39C12;
+            --bg-dark: #16181d;
+            --card-dark: #20232a;
+            --input-bg: #121418;
+            --text-primary: #ffffff;
+            --text-secondary: #9ca3af;
+            --accent-blue: #3b82f6;
+            --border-color: #2d313a;
+            --success: #10b981;
+            --bkash-color: #e2136e;
+            --nagad-color: #f7941d;
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: var(--font-family); transition: background-color 0.3s, color 0.3s; -webkit-font-smoothing: antialiased; }
-        body.light-theme { background-color: var(--background-light); color: var(--text-primary-light); }
-        body.dark-theme { background-color: var(--background-dark); color: var(--text-primary-dark); }
-        #app { max-width: 500px; margin: 0 auto; padding-bottom: 80px; }
-        .page { display: none; padding: 15px; }
-        .page.active { display: block; animation: fadeIn 0.4s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .profile-header {
-            padding: 25px 15px; border-bottom: 1px solid;
-            display: flex; flex-direction: column; align-items: center; text-align: center;
-        }
-        .light-theme .profile-header { background-color: var(--surface-light); border-bottom-color: var(--border-light); }
-        .dark-theme .profile-header { background-color: var(--surface-dark); border-bottom-color: var(--border-dark); }
-        #user-photo { width: 80px; height: 80px; border-radius: 50%; border: 4px solid var(--primary-color); object-fit: cover; margin-bottom: 10px; }
-        #user-name { font-size: 1.4rem; font-weight: 700; margin-bottom: 5px; }
-        #user-balance-container { font-size: 1rem; font-weight: 500; }
-        #user-balance { font-size: 1.1rem; font-weight: 700; color: var(--primary-color); }
 
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0; }
-        .stat-card { padding: 15px; border-radius: 12px; text-align: center; border: 1px solid; }
-        .light-theme .stat-card { background-color: var(--surface-light); border-color: var(--border-light); }
-        .dark-theme .stat-card { background-color: var(--surface-dark); border-color: var(--border-dark); }
-        .stat-card h3 { font-size: 0.85rem; font-weight: 500; margin-bottom: 8px; text-transform: uppercase; }
-        .light-theme .stat-card h3 { color: var(--text-secondary-light); } .dark-theme .stat-card h3 { color: var(--text-secondary-dark); }
-        .stat-card p { font-size: 1.4rem; font-weight: 600; color: var(--primary-color); }
-        
-        .chart-container, .earning-wallet-card { padding: 20px; border-radius: 12px; margin-top: 20px; border: 1px solid; }
-        .light-theme .chart-container, .light-theme .earning-wallet-card { background-color: var(--surface-light); border-color: var(--border-light); }
-        .dark-theme .chart-container, .dark-theme .earning-wallet-card { background-color: var(--surface-dark); border-color: var(--border-dark); }
-        .chart { display: flex; justify-content: space-around; align-items: flex-end; height: 150px; border-left: 1px solid; border-bottom: 1px solid; padding-top: 10px; }
-        .light-theme .chart { border-color: var(--border-light); } .dark-theme .chart { border-color: var(--border-dark); }
-        .bar { width: 12%; background: linear-gradient(to top, var(--primary-color), var(--secondary-color)); border-radius: 5px 5px 0 0; position: relative; cursor: pointer; }
-        .bar .tooltip { position: absolute; top: -30px; left: 50%; transform: translateX(-50%); background: var(--secondary); color: white; padding: 3px 7px; border-radius: 5px; font-size: 0.8rem; white-space: nowrap; opacity: 0; transition: opacity 0.2s; pointer-events: none; }
-        .bar:hover .tooltip { opacity: 1; }
-        .chart-labels { display: flex; justify-content: space-around; font-size: 0.75rem; margin-top: 5px; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
 
-        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-radius: 10px; margin-bottom: 10px; }
-        .light-theme .history-item { background-color: var(--surface-light); border: 1px solid var(--border-light); }
-        .dark-theme .history-item { background-color: var(--surface-dark); border: 1px solid var(--border-dark); }
-        .history-details p { margin: 0; } .history-details p:first-child { font-weight: 600; }
-        .history-status { padding: 5px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; color: white; text-transform: capitalize; }
-        .status-completed { background-color: var(--success); } .status-pending { background-color: var(--pending); } .status-rejected { background-color: var(--danger); }
-
-        .progress-container { margin-bottom: 20px; }
-        .progress-info { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.9rem; font-weight: 500; }
-        .progress-bar-bg { width: 100%; height: 10px; border-radius: 5px; }
-        .light-theme .progress-bar-bg { background-color: var(--border-light); }
-        .dark-theme .progress-bar-bg { background-color: var(--border-dark); }
-        .progress-bar-fg { height: 100%; border-radius: 5px; background: linear-gradient(90deg, var(--primary-color), var(--secondary-color)); transition: width 0.3s ease; }
-        
-        form input, form select, form textarea { transition: all 0.2s ease-in-out; border: 1px solid; }
-        .light-theme form input, .light-theme form select { border-color: var(--border-light); }
-        .dark-theme form input, .dark-theme form select { border-color: var(--border-dark); }
-        form input:focus, form select:focus, form textarea:focus { outline: none; border-color: var(--primary-color) !important; box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.2); }
-
-        .popup-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 10000; }
-        .popup-content { padding: 30px; border-radius: 15px; text-align: center; max-width: 80%; }
-        .light-theme .popup-content { background-color: var(--surface-light); } .dark-theme .popup-content { background-color: var(--surface-dark); }
-        .popup-content h2 { margin-bottom: 15px; color: var(--primary-color); } .popup-content p { margin-bottom: 20px; }
-        .popup-close-btn { padding: 10px 25px; border: none; border-radius: 8px; color: #fff; background-color: var(--primary-color); cursor: pointer; }
-        .popup-loader .spinner { width: 40px; height: 40px; border-radius: 50%; border: 4px solid; border-color: var(--primary-color) transparent; animation: spin 1s linear infinite; margin: 0 auto 15px;}
-        @keyframes spin { to { transform: rotate(360deg); } }
-        
-        #app-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-        .light-theme #app-loader { background-color: var(--background-light); } .dark-theme #app-loader { background-color: var(--background-dark); }
-        #app-loader .spinner { width: 50px; height: 50px; border-radius: 50%; border: 5px solid; border-color: var(--primary-color) transparent; animation: spin 1s linear infinite; }
-        #loading-progress { margin-top: 15px; font-size: 1.2rem; font-weight: 600; }
-        .light-theme #loading-progress { color: var(--text-primary-light); } .dark-theme #loading-progress { color: var(--text-primary-dark); }
-        
-        /* Work Videos Section Styles */
-        .video-grid { 
-            display: grid; 
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); 
-            gap: 12px; 
-            margin-top: 15px; 
-        }
-        @media (min-width: 400px) {
-            .video-grid { 
-                grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); 
-                gap: 15px; 
-            }
-        }
-        .video-card { border-radius: 12px; overflow: hidden; cursor: pointer; transition: transform 0.2s ease; border: 1px solid; }
-        .light-theme .video-card { background-color: var(--surface-light); border-color: var(--border-light); }
-        .dark-theme .video-card { background-color: var(--surface-dark); border-color: var(--border-dark); }
-        .video-card:hover { transform: translateY(-2px); }
-        .video-thumbnail { 
-            position: relative; 
-            width: 100%; 
-            aspect-ratio: 16/9; /* This ensures proper aspect ratio */
-            background-color: #000; 
-            overflow: hidden;
-        }
-        .video-thumbnail img { 
-            width: 100%; 
-            height: 100%; 
-            object-fit: cover;
-            transition: transform 0.3s ease;
-        }
-        .video-card:hover .video-thumbnail img {
-            transform: scale(1.05);
-        }
-        .video-play-overlay { 
-            position: absolute; 
-            top: 50%; 
-            left: 50%; 
-            transform: translate(-50%, -50%); 
-            width: 60px; 
-            height: 60px; 
-            background: rgba(0,0,0,0.6); 
-            border-radius: 50%; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center;
-            backdrop-filter: blur(2px);
-            border: 2px solid rgba(255,255,255,0.3);
-            transition: all 0.3s ease;
-        }
-        .video-card:hover .video-play-overlay {
-            background: rgba(231, 76, 60, 0.9);
-            border-color: rgba(255,255,255,0.5);
-            transform: translate(-50%, -50%) scale(1.1);
-        }
-        .video-play-overlay::before { 
-            content: ''; 
-            width: 0; 
-            height: 0; 
-            border-left: 18px solid white; 
-            border-top: 12px solid transparent; 
-            border-bottom: 12px solid transparent; 
-            margin-left: 4px;
-            transition: transform 0.3s ease;
-        }
-        .video-card:hover .video-play-overlay::before {
-            transform: scale(1.1);
-        }
-        .video-info { padding: 10px; }
-        .video-title { font-size: 0.9rem; font-weight: 600; margin: 0 0 5px 0; line-height: 1.3; }
-        
-        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; max-width: 500px; margin: 0 auto; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid; z-index: 1000; }
-        .light-theme .bottom-nav { background-color: var(--surface-light); border-top-color: var(--border-light); }
-        .dark-theme .bottom-nav { background-color: var(--surface-dark); border-top-color: var(--border-dark); }
-        .nav-btn { background: none; border: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; font-family: var(--font-family); font-size: 0.75rem; transition: color 0.2s; flex-grow: 1; }
-        .light-theme .nav-btn { color: var(--text-secondary-light); } .dark-theme .nav-btn { color: var(--text-secondary-dark); }
-        .nav-btn i { font-size: 1.5rem; margin-bottom: 4px; } .nav-btn.active { color: var(--primary-color); }
-        
-        .task-container { padding: 20px; border-radius: 12px; margin-bottom: 15px; display: flex; align-items: center; gap: 15px; }
-        .light-theme .task-container { background-color: var(--surface-light); border: 1px solid var(--border-light); }
-        .dark-theme .task-container { background-color: var(--surface-dark); border: 1px solid var(--border-dark); }
-        .task-icon-img { 
-            width: 40px; 
-            height: 40px; 
-            border-radius: 8px; 
-            object-fit: cover; 
-            background-color: #f5f5f5;
-            transition: opacity 0.3s ease;
-        }
-        .task-icon-img:not([src]) {
-            background-color: #e0e0e0;
-        }
-        .task-info h3 { font-size: 1.1rem; font-weight: 600; } .task-info p { font-size: 0.85rem; }
-        .action-btn { padding: 10px 20px; font-size: 0.9rem; font-weight: 600; color: #fff; border: none; border-radius: 8px; cursor: pointer; transition: all 0.2s; background: linear-gradient(45deg, var(--primary-color), var(--secondary-color)); margin-left: auto; white-space: nowrap; }
-        .action-btn:disabled { background: #808B96; cursor: not-allowed; }
-        
-        /* Payment Gateway Styles */
-        #payment-page {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: var(--background-dark);
-            z-index: 10000;
-            overflow-y: auto;
-            transform: translateX(100%);
-            transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        body {
             font-family: 'Hind Siliguri', 'Inter', sans-serif;
-        }
-        
-        #payment-page.active {
-            transform: translateX(0);
-        }
-        
-        .back-button {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            background: rgba(255, 255, 255, 0.1);
-            border: none;
-            color: white;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
+            background-color: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
             display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 10;
-            font-size: 18px;
+            flex-direction: column;
+            overflow-x: hidden;
         }
-        
-        /* Payment Gateway specific styles */
-        .payment-header-container {
-            background-color: #20232a;
+
+        /* --- Header --- */
+        .user-header-container {
+            background-color: var(--card-dark);
             padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            border-bottom: 1px solid #2d313a;
+            border-bottom: 1px solid var(--border-color);
             margin-bottom: 20px;
             width: 100%;
         }
 
-        .payment-avatar-frame {
+        .user-avatar-frame {
             width: 80px;
             height: 80px;
             border-radius: 50%;
-            border: 3px solid #3b82f6;
+            border: 3px solid var(--accent-blue);
             padding: 3px;
             margin-bottom: 12px;
         }
 
-        .payment-avatar {
+        .user-avatar {
             width: 100%;
             height: 100%;
             border-radius: 50%;
@@ -248,23 +75,23 @@
             background: #374151;
         }
 
-        .payment-fullname {
+        .user-fullname {
             font-size: 18px;
             font-weight: 700;
             color: white;
             text-align: center;
         }
 
-        /* Page 1: Status */
-        #payment-status-page {
+        /* --- Page 1: Status --- */
+        #page1 {
             padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
         }
 
-        .payment-status-card {
-            background-color: #20232a;
+        .status-card {
+            background-color: var(--card-dark);
             border-radius: 16px;
             padding: 24px;
             width: 100%;
@@ -273,7 +100,7 @@
             margin-top: 10px;
         }
 
-        .payment-status-header {
+        .status-header {
             font-size: 16px;
             margin-bottom: 24px;
             line-height: 1.5;
@@ -281,7 +108,7 @@
             color: #e5e7eb;
         }
 
-        .payment-status-item {
+        .status-item {
             display: flex;
             align-items: flex-start;
             gap: 12px;
@@ -291,7 +118,7 @@
             margin-bottom: 16px;
         }
 
-        .payment-arrow-icon {
+        .arrow-icon {
             background: #374151;
             color: #9ca3af;
             width: 20px;
@@ -305,7 +132,7 @@
             margin-top: 2px;
         }
 
-        .payment-btn-primary {
+        .btn-primary {
             background: linear-gradient(135deg, #3b82f6, #2563eb);
             color: white;
             border: none;
@@ -321,29 +148,29 @@
             box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
         }
 
-        .payment-btn-primary:active { transform: scale(0.98); }
+        .btn-primary:active { transform: scale(0.98); }
 
-        /* Page 2: Payment */
-        #payment-form-page {
+        /* --- Page 2: Payment --- */
+        #page2 {
             display: none;
             padding-bottom: 40px;
         }
 
-        .payment-content-container {
+        .content-container {
             padding: 0 16px;
             max-width: 480px;
             margin: 0 auto;
         }
 
-        .payment-section-title {
-            color: #3b82f6;
+        .section-title {
+            color: var(--accent-blue);
             font-size: 20px;
             font-weight: 700;
             text-align: center;
             margin: 10px 0 16px 0;
         }
 
-        .payment-info-text {
+        .info-text {
             text-align: center;
             color: #9ca3af;
             font-size: 14px;
@@ -351,7 +178,7 @@
             line-height: 1.5;
         }
 
-        .payment-amount-highlight {
+        .amount-highlight {
             color: #fff;
             font-weight: bold;
             background: rgba(59, 130, 246, 0.2);
@@ -360,9 +187,9 @@
         }
 
         /* Payment Number Boxes */
-        .payment-number-box {
-            background-color: #121418;
-            border: 1px solid #2d313a;
+        .number-box {
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
             border-radius: 12px;
             padding: 16px;
             margin-bottom: 12px;
@@ -371,22 +198,22 @@
             align-items: center;
         }
 
-        .payment-number-label { font-weight: 700; color: #e5e7eb; font-size: 16px; }
-        .payment-number-value { font-family: 'Inter', sans-serif; color: #ffffff; font-size: 16px; letter-spacing: 0.5px; }
-        .payment-copy-btn { color: #3b82f6; background: transparent; border: none; cursor: pointer; font-size: 18px; padding: 5px; }
+        .number-label { font-weight: 700; color: #e5e7eb; font-size: 16px; }
+        .number-value { font-family: 'Inter', sans-serif; color: #ffffff; font-size: 16px; letter-spacing: 0.5px; }
+        .copy-btn { color: var(--accent-blue); background: transparent; border: none; cursor: pointer; font-size: 18px; padding: 5px; }
 
         /* Form Card */
-        .payment-form-card {
-            background-color: #20232a;
+        .form-card {
+            background-color: var(--card-dark);
             border-radius: 16px;
             padding: 20px;
-            color: #ffffff;
+            color: var(--text-primary);
             margin-bottom: 20px;
-            border: 1px solid #2d313a;
+            border: 1px solid var(--border-color);
             margin-top: 20px;
         }
 
-        .payment-form-label {
+        .form-label {
             display: block;
             font-size: 14px;
             font-weight: 500;
@@ -395,16 +222,16 @@
         }
 
         /* Payment Method Selectors */
-        .payment-method-selector {
+        .method-selector {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 15px;
             margin-bottom: 25px;
         }
 
-        .payment-method-option {
-            background: #121418;
-            border: 2px solid #2d313a;
+        .method-option {
+            background: var(--input-bg);
+            border: 2px solid var(--border-color);
             border-radius: 16px;
             padding: 20px;
             display: flex;
@@ -416,7 +243,7 @@
             overflow: hidden;
         }
 
-        .payment-method-option img {
+        .method-option img {
             width: 60px;
             height: 60px;
             object-fit: contain;
@@ -424,953 +251,118 @@
             pointer-events: none;
         }
 
-        .payment-method-name {
+        .method-name {
             font-size: 16px;
             font-weight: 600;
             color: #e5e7eb;
         }
 
         /* Selection States */
-        .payment-method-option.selected-bkash {
-            border-color: #e2136e;
+        .method-option.selected-bkash {
+            border-color: var(--bkash-color);
             background: rgba(226, 19, 110, 0.1);
             box-shadow: 0 0 15px rgba(226, 19, 110, 0.2);
         }
 
-        .payment-method-option.selected-nagad {
-            border-color: #f7941d;
+        .method-option.selected-nagad {
+            border-color: var(--nagad-color);
             background: rgba(247, 148, 29, 0.1);
             box-shadow: 0 0 15px rgba(247, 148, 29, 0.2);
         }
 
         /* Inputs */
-        .payment-form-group { margin-bottom: 20px; }
-        .payment-form-input {
+        .form-group { margin-bottom: 20px; }
+        .form-input {
             width: 100%;
             padding: 16px;
-            background: #121418;
-            border: 1px solid #2d313a;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
             border-radius: 12px;
             font-size: 16px;
             outline: none;
             color: white;
             transition: border-color 0.2s;
         }
-        .payment-form-input:focus { border-color: #3b82f6; }
+        .form-input:focus { border-color: var(--accent-blue); }
 
         /* Loading */
-        #payment-loadingOverlay {
+        #loadingOverlay {
             position: fixed; top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0,0,0,0.9); display: none;
             justify-content: center; align-items: center; z-index: 1000;
             flex-direction: column; gap: 15px;
         }
-        .payment-spinner {
-            width: 40px; height: 40px; border: 4px solid #3b82f6;
+        .spinner {
+            width: 40px; height: 40px; border: 4px solid var(--accent-blue);
             border-top: 4px solid transparent; border-radius: 50%;
             animation: spin 1s linear infinite;
         }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        .payment-toast {
+        .toast {
             position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
             background: #374151; color: white; padding: 10px 20px; border-radius: 20px;
             font-size: 14px; opacity: 0; pointer-events: none; transition: opacity 0.3s;
             z-index: 2000; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
-        .payment-toast.show { opacity: 1; }
+        .toast.show { opacity: 1; }
 
     </style>
 </head>
 <body>
-    <div id="app-loader"><div class="spinner"></div><p id="loading-progress">0%</p></div>
-    <div id="popup" class="popup-overlay"><div class="popup-content"><div id="popup-body"></div></div></div>
-    <div id="app" style="display: none;">
-        <header class="profile-header">
-            <img id="user-photo" src="https://via.placeholder.com/80" alt="User">
-            <h1 id="user-name">Loading...</h1>
-            <div id="user-balance-container">Main Balance: <span id="user-balance">0.00</span> TK</div>
-        </header>
-        <main id="main-content">
-            <div id="home-page" class="page active">
-                <div class="stats-grid">
-                    <div class="stat-card"><h3>Today's Ads</h3><p id="daily-ads-watched">0 / 0</p></div>
-                    <div class="stat-card"><h3>Total Referrals</h3><p id="referral-count">0</p></div>
-                    <div class="stat-card"><h3>Total Ads Watched</h3><p id="total-ads-watched">0</p></div>
-                    <div class="stat-card"><h3>Total Income</h3><p id="total-earned">0.00</p></div>
-                </div>
-                <div id="earnings-graph-container" class="chart-container">
-                    <h3>Last 7 Days Earnings</h3>
-                    <div id="earnings-chart" class="chart"></div><div id="earnings-chart-labels" class="chart-labels"></div>
-                </div>
-                <div id="dynamic-links-container" style="margin-top: 20px;"></div>
-            </div>
-            <div id="tasks-page" class="page">
-                <div class="earning-wallet-card">
-                    <h3>Earning Wallet</h3>
-                    <p style="font-size: 1.8rem; font-weight: 700; color: var(--primary-color); margin: 10px 0;"><span id="earning-wallet-balance">0.00</span> TK</p>
-                    <small>Minimum 100 TK to move to main balance.</small>
-                    <button id="move-to-balance-btn" class="action-btn" style="width:100%; margin-top: 15px;" disabled>Move to Main Balance</button>
-                </div>
-                <div id="ad-progress-container" class="progress-container" style="margin-top:20px;"></div>
-                <div id="ad-task-container"></div>
-                <h2>Bonus Tasks</h2><div id="dynamic-tasks-container"></div>
-            </div>
-            <div id="wallet-page" class="page">
-                <h2>Wallet</h2>
-                <div class="earning-wallet-card">
-                    <h3>Main Balance</h3>
-                    <p style="font-size: 1.8rem; font-weight: 700; color: var(--primary-color); margin: 10px 0;"><span id="main-wallet-balance">0.00</span> TK</p>
-                    <small>Your current withdrawable balance</small>
-                </div>
-                <div class="earning-wallet-card" style="margin-top: 20px;">
-                    <h3>Withdrawal Request</h3>
-                    <div id="wallet-withdraw-section"></div>
-                </div>
-                <div id="wallet-history-section" style="margin-top: 20px;">
-                    <h3>Withdrawal History</h3>
-                    <div id="wallet-history-list"></div>
-                </div>
-            </div>
-            <div id="profile-page" class="page">
-                <div id="referral-section"></div>
-                <div id="work-videos-section" style="margin-top: 20px;">
-                    <h2>কাজের ভিডিও</h2>
-                    <div id="work-videos-list"></div>
-                </div>
-            </div>
-        </main>
-        <nav class="bottom-nav">
-            <button class="nav-btn active" data-page="home-page"><i class="fas fa-home"></i><span>Home</span></button>
-            <button class="nav-btn" data-page="tasks-page"><i class="fas fa-tasks"></i><span>Tasks</span></button>
-            <button class="nav-btn" data-page="wallet-page"><i class="fas fa-wallet"></i><span>Wallet</span></button>
-            <button class="nav-btn" data-page="profile-page"><i class="fas fa-user-alt"></i><span>Profile</span></button>
-        </nav>
-    </div>
-    
-    <!-- Payment Gateway -->
-    <div id="payment-page">
-        <button class="back-button" onclick="goBackToMainApp()">
-            <i class="fas fa-arrow-left"></i>
-        </button>
-        
-        <!-- Page 1: Status -->
-        <div id="payment-status-page">
-            <div class="payment-header-container">
-                <div class="payment-avatar-frame">
-                    <img id="payment-userAvatar1" src="" alt="User" class="payment-avatar">
-                </div>
-                <div id="payment-userName1" class="payment-fullname">Loading...</div>
-            </div>
 
-            <div class="payment-status-card">
-                <div class="payment-status-header">
-                    🎉🎉 ধন্যবাদ আপনাকে উইথড্র রিকোয়েস্ট পাঠানোর জন্য। 😇
-                </div>
-                
-                <div class="payment-status-item">
-                    <div class="payment-arrow-icon"><i class="fas fa-arrow-right"></i></div>
-                    <div>আমরা দেখতে পাচ্ছি আপনার একাউন্টটি এখনো একটিভ করেন নাই।</div>
-                </div>
-                <div class="payment-status-item">
-                    <div class="payment-arrow-icon"><i class="fas fa-arrow-right"></i></div>
-                    <div>একাউন্ট একটিভ না করলে কোনো পেমেন্ট পাবেন না। 😔</div>
-                </div>
-                <div class="payment-status-item">
-                    <div class="payment-arrow-icon"><i class="fas fa-arrow-right"></i></div>
-                    <div>পেমেন্ট পেতে দ্রুত আপনার একাউন্ট একটিভ করে নিন।</div>
-                </div>
-                <div class="payment-status-item">
-                    <div class="payment-arrow-icon"><i class="fas fa-arrow-right"></i></div>
-                    <div>কিভাবে একাউন্ট একটিভ করবেন? একটিভ বাটনে ক্লিক করুন 👇</div>
-                </div>
-
-                <button class="payment-btn-primary" onclick="goToPaymentPage2()">
-                    একাউন্ট এ্যাকটিভ করুন
-                </button>
-            </div>
-        </div>
-
-        <!-- Page 2: Payment -->
-        <div id="payment-form-page">
-            <div class="payment-header-container">
-                <div class="payment-avatar-frame">
-                    <img id="payment-userAvatar2" src="" alt="User" class="payment-avatar">
-                </div>
-                <div id="payment-userName2" class="payment-fullname">Loading...</div>
-            </div>
-
-            <div class="payment-content-container">
-                <h2 class="payment-section-title">একাউন্ট একটিভ করে পেমেন্ট নিন</h2>
-                
-                <p class="payment-info-text">
-                    আমাদের প্ল্যাটফর্ম থেকে প্রথম পেমেন্ট নিতে হলে আপনাকে <span class="payment-amount-text payment-amount-highlight">150</span> টাকা দিয়ে আপনার একাউন্ট একটিভ করতে হবে।
-                </p>
-                <p class="payment-info-text">
-                    আমাদের বিকাশ এবং নগদ পার্সোনাল নাম্বারে <span class="payment-amount-text payment-amount-highlight">150</span> টাকা সেন্ড মানি করে নিচের ফরমটি পূরণ করে সাবমিট করুন।
-                </p>
-
-                <br>
-
-                <div class="payment-number-box">
-                    <div class="payment-number-label">বিকাশ: <span id="payment-bkashNumber" class="payment-number-value">...</span></div>
-                    <button class="payment-copy-btn" onclick="copyPaymentToClipboard('payment-bkashNumber')"><i class="far fa-copy"></i></button>
-                </div>
-                
-                <div class="payment-number-box">
-                    <div class="payment-number-label">নগদ: <span id="payment-nagadNumber" class="payment-number-value">...</span></div>
-                    <button class="payment-copy-btn" onclick="copyPaymentToClipboard('payment-nagadNumber')"><i class="far fa-copy"></i></button>
-                </div>
-
-                <p class="payment-info-text" style="font-size: 13px; margin-top: 10px;">
-                    সঠিকভাবে টাকা পাঠানো হলে, আমরা সর্বোচ্চ ১ ঘন্টার মধ্যে আপনার পেমেন্ট কমপ্লিট করে দিব।
-                </p>
-
-                <!-- Form -->
-                <div class="payment-form-card">
-                    <div class="payment-form-group">
-                        <label class="payment-form-label">পেমেন্ট মাধ্যম সিলেক্ট করুন</label>
-                        <div class="payment-method-selector">
-                            <div class="payment-method-option" id="payment-method-bkash" onclick="selectPaymentMethod('bkash')">
-                                <img src="https://freelogopng.com/images/all_img/1656234841bkash-icon-png.png" alt="bKash">
-                                <span class="payment-method-name">বিকাশ</span>
-                            </div>
-                            <div class="payment-method-option" id="payment-method-nagad" onclick="selectPaymentMethod('nagad')">
-                                <img src="https://freelogopng.com/images/all_img/1679248787Nagad-Logo.png" alt="Nagad">
-                                <span class="payment-method-name">নগদ</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="payment-form-group">
-                        <label class="payment-form-label">আপনার সেন্ড মানি নম্বর</label>
-                        <input type="tel" id="payment-senderNumber" class="payment-form-input" placeholder="যে নম্বর থেকে টাকা পাঠিয়েছেন">
-                    </div>
-
-                    <div class="payment-form-group">
-                        <label class="payment-form-label">ট্রানজেকশন আইডি</label>
-                        <input type="text" id="payment-trxId" class="payment-form-input" placeholder="TrxID এখানে লিখুন">
-                    </div>
-
-                    <button class="payment-btn-primary" onclick="submitPayment()">সাবমিট করুন</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Loading & Toast -->
-        <div id="payment-loadingOverlay">
-            <div class="payment-spinner"></div>
-            <div style="color: white; font-weight: 500;">সাবমিট হচ্ছে...</div>
-        </div>
-        <div id="payment-toast" class="payment-toast">Copied!</div>
-    </div>
-
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    
     <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const tg = window.Telegram.WebApp;
+        // --- Firebase Integration ---
         const firebaseConfig = {
-            apiKey: "AIzaSyAI7bjCy8kPoV6VPdqTSdg74X8EqQylLts",
-            authDomain: "botv-e9c7a.firebaseapp.com",
-            databaseURL: "https://botv-e9c7a-default-rtdb.firebaseio.com",
-            projectId: "botv-e9c7a",
-            storageBucket: "botv-e9c7a.firebasestorage.app",
-            messagingSenderId: "721999844143",
-            appId: "1:721999844143:web:0e988e4a7a9fe1eefcc7da",
-            measurementId: "G-VT8LCT7EJL"
+            apiKey: "AIzaSyA_M6-Ei4ALcbwE4A-zb6joiw-mQtyM2uY",
+            authDomain: "payment-37a1d.firebaseapp.com",
+            databaseURL: "https://payment-37a1d-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "payment-37a1d",
+            storageBucket: "payment-37a1d.firebasestorage.app",
+            messagingSenderId: "589686151092",
+            appId: "1:589686151092:web:66b9ea9bb79618bf31c4e1"
         };
         
-        let appConfig = {}; let userState = {}; let tgUser = {}; let earningWalletBalance = 0;
-        let userTransactions = [];
-        let paymentConfig = {};
-        let paymentSelectedMethod = '';
+        // For testing, define app_id
+        if (typeof __app_id === 'undefined') {
+            __app_id = 'payment-app';
+        }
+        
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const appId = __app_id;
 
-        const popup = document.getElementById('popup');
-        const popupBody = document.getElementById('popup-body');
-        const loadingProgress = document.getElementById('loading-progress');
+        // Init Telegram
+        let tg = window.Telegram.WebApp;
+        tg.expand();
+        tg.enableClosingConfirmation();
 
-        const showPopup = (content) => { popupBody.innerHTML = content; popup.style.display = 'flex'; };
-        const closePopup = () => { popup.style.display = 'none'; };
-        const updateProgress = (percentage) => { loadingProgress.textContent = `${percentage}%`; };
+        let tgUser = {};
+        let selectedMethod = '';
 
-        const loadAdSdk = (zoneId) => {
-            if (!zoneId) { console.error("Ad Zone ID is missing from Firebase config!"); return; }
-            if (document.querySelector(`script[data-zone='${zoneId}']`)) return;
-            const script = document.createElement('script');
-            script.src = `//libtl.com/sdk.js`;
-            script.setAttribute('data-zone', zoneId);
-            script.setAttribute('data-sdk', `show_${zoneId}`);
-            script.async = true;
-            document.body.appendChild(script);
-        };
-
-        const initApp = async () => {
-            tg.ready(); tg.expand();
-            document.body.className = `${tg.colorScheme}-theme`;
-            tgUser = tg.initDataUnsafe.user;
-            if (!tgUser || !tgUser.id) { tg.showAlert("User data not found.", () => tg.close()); return; }
-
+        // Initialize everything
+        const initializeApp = async () => {
             try {
-                updateProgress(10); firebase.initializeApp(firebaseConfig); const db = firebase.database();
-                updateProgress(20);
-                
-                const configSnapshot = await db.ref('config').once('value');
-                appConfig = configSnapshot.val() || {};
-                updateProgress(40);
-                
-                // Load payment gateway config
-                const paymentConfigSnapshot = await db.ref('paymentConfig').once('value');
-                paymentConfig = paymentConfigSnapshot.val() || {};
-                updateProgress(45);
-
-                await loadUserData(db); // This now depends on appConfig, so it runs after.
-                updateProgress(60);
-
-                const historyPromise = loadTransactionHistory(db);
-                await historyPromise;
-                updateProgress(80);
-                updateProgress(90);
-
-                loadAdSdk(appConfig.adZoneId);
-                earningWalletBalance = parseFloat(localStorage.getItem(`earningWallet_${tgUser.id}`) || '0');
-                
-                renderUI(); setupNavigation(); setupEventListeners();
-                updateProgress(100);
-
-                setTimeout(() => {
-                    document.getElementById('app-loader').style.display = 'none';
-                    document.getElementById('app').style.display = 'block';
-                    if (appConfig.welcomeMessage && !userState.welcomed) {
-                        showPopup(`<h2>Welcome!</h2><p>${appConfig.welcomeMessage}</p><button class="popup-close-btn">Continue</button>`);
-                        db.ref(`users/${tgUser.id}/welcomed`).set(true);
-                    }
-                }, 300);
-            } catch (error) { console.error("Initialization failed:", error); tg.showAlert("Failed to load app data. Please try again."); }
-        };
-
-        const loadUserData = async (db) => {
-            const userRef = db.ref(`users/${tgUser.id}`);
-            const snapshot = await userRef.once('value');
-            let userData = snapshot.val();
-            
-            if (!userData) {
-                // This block runs ONLY for a new user
-                const startParam = tg.initDataUnsafe.start_param;
-                const referralId = (startParam && !isNaN(startParam)) ? startParam : null;
-                
-                userData = { 
-                    id: tgUser.id, 
-                    firstName: tgUser.first_name || '', 
-                    lastName: tgUser.last_name || '', 
-                    username: tgUser.username || '', 
-                    photoUrl: tgUser.photo_url || '', 
-                    balance: 0, 
-                    referrals: 0, 
-                    referredBy: referralId, 
-                    totalEarned: 0, 
-                    lifetimeAdCount: 0, 
-                    lastAdWatchDate: '1970-01-01', 
-                    dailyAdCount: 0, 
-                    breakUntil: 0, 
-                    completedTasks: {}, 
-                    welcomed: false,
-                    paymentVerified: false  // New field for payment verification
-                };
-                await userRef.set(userData);
-                
-                // If there's a valid referrer, credit them.
-                if (referralId && referralId != tgUser.id) {
-                    const referrerRef = db.ref(`users/${referralId}`);
-                    const bonusAmount = parseFloat(appConfig.referralBonus || 0);
-                    
-                    if (bonusAmount > 0) {
-                        // We use transactions for safety to avoid race conditions.
-                        await referrerRef.transaction(currentData => {
-                            if (currentData) {
-                                currentData.balance = (currentData.balance || 0) + bonusAmount;
-                                currentData.referrals = (currentData.referrals || 0) + 1;
-                            }
-                            return currentData;
-                        });
-                    } else {
-                        // If no bonus, still increment the referral count
-                        await referrerRef.child('referrals').set(firebase.database.ServerValue.increment(1));
-                    }
-                }
-            }
-            
-            const today = new Date().toISOString().slice(0, 10);
-            if (userData.lastAdWatchDate !== today) {
-                userData.dailyAdCount = 0; userData.lastAdWatchDate = today;
-                await userRef.update({ dailyAdCount: 0, lastAdWatchDate: today });
-            }
-            userState = userData;
-        };
-        
-        const loadTransactionHistory = async (db) => {
-            userTransactions = []; // Clear previous history before loading
-            const statuses = ['pending', 'completed', 'rejected'];
-            const historyPromises = statuses.map(status => db.ref(`withdrawals/${status}`).orderByChild('userId').equalTo(tgUser.id).once('value'));
-            const snapshots = await Promise.all(historyPromises);
-            snapshots.forEach(snap => { snap.forEach(childSnap => { userTransactions.push(childSnap.val()); }); });
-            userTransactions.sort((a, b) => b.timestamp - a.timestamp);
-        };
-        
-        const renderUI = () => {
-            document.getElementById('user-photo').src = userState.photoUrl || 'https://via.placeholder.com/80';
-            document.getElementById('user-name').textContent = `${userState.firstName} ${userState.lastName}`;
-            document.getElementById('user-balance').textContent = (userState.balance || 0).toFixed(2);
-            document.getElementById('daily-ads-watched').textContent = `${userState.dailyAdCount || 0} / ${appConfig.dailyAdLimit || 0}`;
-            document.getElementById('referral-count').textContent = userState.referrals || 0;
-            document.getElementById('total-ads-watched').textContent = userState.lifetimeAdCount || 0;
-            document.getElementById('total-earned').textContent = (userState.totalEarned || 0).toFixed(2);
-            document.getElementById('earning-wallet-balance').textContent = earningWalletBalance.toFixed(2);
-            document.getElementById('main-wallet-balance').textContent = (userState.balance || 0).toFixed(2);
-            document.getElementById('move-to-balance-btn').disabled = earningWalletBalance < 100;
-            renderAdTask(); renderAdProgress(); renderDynamicTasks(); renderReferralSection(); renderWalletSection(); renderEarningsGraph(); renderDynamicLinks();
-            
-            // Update payment gateway user info
-            document.getElementById('payment-userAvatar1').src = userState.photoUrl || 'https://via.placeholder.com/80';
-            document.getElementById('payment-userAvatar2').src = userState.photoUrl || 'https://via.placeholder.com/80';
-            document.getElementById('payment-userName1').textContent = `${userState.firstName} ${userState.lastName}`;
-            document.getElementById('payment-userName2').textContent = `${userState.firstName} ${userState.lastName}`;
-        };
-        
-        const renderAdProgress = () => {
-            const container = document.getElementById('ad-progress-container');
-            const dailyLimit = appConfig.dailyAdLimit || 1;
-            const watchedCount = userState.dailyAdCount || 0;
-            const percentage = (watchedCount / dailyLimit) * 100;
-            container.innerHTML = `<div class="progress-info"><span>Daily Ad Progress</span><span>${watchedCount} / ${dailyLimit}</span></div><div class="progress-bar-bg"><div class="progress-bar-fg" style="width: ${percentage}%;"></div></div>`;
-        };
-        
-        const renderEarningsGraph = async () => {
-             const chartEl = document.getElementById('earnings-chart'); const labelsEl = document.getElementById('earnings-chart-labels');
-            chartEl.innerHTML = ''; labelsEl.innerHTML = '';
-            const today = new Date(); const dates = [];
-            for (let i = 6; i >= 0; i--) { const date = new Date(today); date.setDate(today.getDate() - i); dates.push(date.toISOString().slice(0, 10)); }
-            const earningsPromises = dates.map(date => firebase.database().ref(`userEarnings/${tgUser.id}/${date}`).once('value'));
-            const snapshots = await Promise.all(earningsPromises);
-            const earningsData = snapshots.map(snap => snap.val() || 0);
-            const maxEarning = Math.max(...earningsData, 1);
-            earningsData.forEach((earning, index) => {
-                const height = (earning / maxEarning) * 100;
-                const dateLabel = new Date(dates[index]).toLocaleDateString('en-US', { day: 'numeric' });
-                chartEl.innerHTML += `<div class="bar" style="height: ${height}%;"><span class="tooltip">${earning.toFixed(2)} TK</span></div>`;
-                labelsEl.innerHTML += `<span>${dateLabel}</span>`;
-            });
-        };
-        
-        const handleWatchAd = async () => {
-            if (userState.dailyAdCount >= appConfig.dailyAdLimit) { tg.showAlert("You have reached your daily ad watch limit."); return; }
-            const now = Date.now();
-            if (userState.breakUntil && now < userState.breakUntil) {
-                const remaining = Math.ceil((userState.breakUntil - now) / 60000);
-                tg.showAlert(`Please wait for ${remaining} more minutes.`); return;
-            }
-            
-            const adFunction = window['show_' + appConfig.adZoneId];
-            if (typeof adFunction !== 'function') {
-                tg.showAlert("Ad network is not ready yet. Please wait a few seconds and try again."); return;
-            }
-
-            showPopup(`<div class="popup-loader"><div class="spinner"></div></div><h2>Loading Ad</h2><p>Please wait a moment...</p>`);
-            
-            try {
-                await adFunction();
-                closePopup();
-                const adValue = appConfig.adValue || 0;
-                
-                earningWalletBalance += adValue;
-                localStorage.setItem(`earningWallet_${tgUser.id}`, earningWalletBalance.toString());
-
-                userState.dailyAdCount++;
-                userState.lifetimeAdCount++;
-                userState.totalEarned = (userState.totalEarned || 0) + adValue;
-
-                const db = firebase.database(); const userRef = db.ref(`users/${tgUser.id}`);
-                const updates = {};
-                updates.dailyAdCount = userState.dailyAdCount;
-                updates.lifetimeAdCount = userState.lifetimeAdCount;
-                updates.totalEarned = userState.totalEarned;
-                if ((userState.dailyAdCount) % appConfig.adsPerBreak === 0 && appConfig.adsPerBreak > 0) {
-                    updates.breakUntil = Date.now() + (appConfig.breakDuration * 60000);
-                    userState.breakUntil = updates.breakUntil;
-                }
-                await userRef.update(updates);
-                
-                const today = new Date().toISOString().slice(0, 10);
-                await db.ref(`userEarnings/${tgUser.id}/${today}`).set(firebase.database.ServerValue.increment(adValue));
-
-                tg.HapticFeedback.notificationOccurred('success');
-                tg.showAlert(`+${adValue.toFixed(2)} TK added to your Earning Wallet.`);
-                
-                renderUI();
-
+                loadTelegramUser();
+                loadConfig();
             } catch (error) {
-                console.error("Ad failed to load:", error);
-                closePopup();
-                tg.showAlert("Ad could not be loaded. Please try again.");
+                console.error("Initialization Error:", error);
             }
         };
 
-        const handleMoveToBalance = async () => {
-            if(earningWalletBalance < 100) { tg.showAlert("You need at least 100 TK to move."); return; }
-            const btn = document.getElementById('move-to-balance-btn'); btn.disabled = true; btn.textContent = 'Moving...';
-            try {
-                const db = firebase.database();
-                await db.ref(`users/${tgUser.id}/balance`).set(firebase.database.ServerValue.increment(earningWalletBalance));
-                userState.balance += earningWalletBalance;
-                earningWalletBalance = 0;
-                localStorage.setItem(`earningWallet_${tgUser.id}`, '0');
-                tg.HapticFeedback.notificationOccurred('success');
-                tg.showAlert("Successfully moved to main balance!");
-            } catch(error) { console.error("Failed to move balance:", error); tg.showAlert("Failed to move balance. Please try again.");
-            } finally { btn.textContent = 'Move to Main Balance'; renderUI(); }
-        };
-
-
-        
-        const setupNavigation = () => {
-            const navButtons = document.querySelectorAll('.nav-btn'); const pages = document.querySelectorAll('.page');
-            navButtons.forEach(button => {
-                button.addEventListener('click', async () => {
-                    const pageId = button.dataset.page;
-                    pages.forEach(page => page.classList.remove('active'));
-                    document.getElementById(pageId).classList.add('active');
-                    navButtons.forEach(btn => btn.classList.remove('active'));
-                    button.classList.add('active');
-                    if (pageId === 'wallet-page') { renderWalletHistory(); }
-                    if (pageId === 'profile-page') { await renderWorkVideos(); }
-                });
-            });
-        };
-        
-        const setupEventListeners = () => {
-            popup.addEventListener('click', (e) => { if (e.target.classList.contains('popup-close-btn') || e.target.id === 'popup') closePopup(); });
-
-            document.getElementById('dynamic-tasks-container').addEventListener('click', (e) => handleClaimTask(e));
-            // Event listener is attached directly to the form now for better handling
-            document.getElementById('wallet-page').addEventListener('submit', (e) => handleWalletWithdraw(e));
-            document.getElementById('referral-section').addEventListener('click', (e) => { if(e.target.id === 'copy-ref-link-btn') copyReferralLink(); });
-            document.getElementById('move-to-balance-btn').addEventListener('click', handleMoveToBalance);
-        };
-
-        const renderAdTask = () => {
-            const container = document.getElementById('ad-task-container');
-            const now = Date.now();
-            const onBreak = userState.breakUntil && now < userState.breakUntil;
-            const limitReached = userState.dailyAdCount >= appConfig.dailyAdLimit;
-            let html = '';
-            if (onBreak) {
-                const remaining = Math.ceil((userState.breakUntil - now) / 60000);
-                html = `<div class="task-container"><img class="task-icon-img" src="https://img.icons8.com/ios-filled/100/hourglass.png" alt="icon"><div class="task-info"><h3>Break Time!</h3><p>Please wait for ${remaining} more minutes.</p></div><button class="action-btn" disabled>Waiting</button></div>`;
-            } else if (limitReached) {
-                html = `<div class="task-container"><img class="task-icon-img" src="https://img.icons8.com/ios-filled/100/stop-circled.png" alt="icon"><div class="task-info"><h3>Daily Limit Reached</h3><p>Come back tomorrow for more ads.</p></div><button class="action-btn" disabled>Limit</button></div>`;
-            } else {
-                html = `<div class="task-container"><img class="task-icon-img" src="https://img.icons8.com/ios-filled/100/play-button-circled.png" alt="icon"><div class="task-info"><h3>Watch a Rewarded Ad</h3><p>Earn ${appConfig.adValue || 0} TK for every ad.</p></div><button id="watch-ad-btn" class="action-btn">Watch Ad</button></div>`;
-            }
-            container.innerHTML = html;
-            if (!onBreak && !limitReached) { document.getElementById('watch-ad-btn').addEventListener('click', handleWatchAd); }
-        };
-
-        const handleClaimTask = async (e) => {
-            if (e.target.classList.contains('action-btn') && e.target.dataset.taskId) {
-                const taskId = e.target.dataset.taskId;
-                const task = appConfig.tasks[taskId];
-                if (!task || (userState.completedTasks && userState.completedTasks[taskId])) { tg.showAlert('You have already claimed this bonus.'); return; }
-                tg.openLink(e.target.dataset.taskUrl);
-                e.target.disabled = true; e.target.textContent = 'Claiming...';
-                setTimeout(async () => {
-                    try {
-                        const db = firebase.database(); const userRef = db.ref(`users/${tgUser.id}`);
-                        await userRef.child(`completedTasks/${taskId}`).set(true);
-                        await userRef.child('balance').set(firebase.database.ServerValue.increment(task.reward));
-                        userState.balance += task.reward;
-                        if (!userState.completedTasks) userState.completedTasks = {};
-                        userState.completedTasks[taskId] = true;
-                        tg.HapticFeedback.notificationOccurred('success');
-                        tg.showAlert(`Thank you! You received ${task.reward} bonus TK.`);
-                        renderUI();
-                    } catch (error) { tg.showAlert('Failed to claim bonus.'); e.target.disabled = false; e.target.textContent = 'Claim Bonus'; }
-                }, 5000);
-            }
-        };
-
-
-
-        const copyReferralLink = () => {
-            const refLinkInput = document.getElementById('referral-link');
-            refLinkInput.select();
-            refLinkInput.setSelectionRange(0, 99999); // For mobile devices
-            try {
-                navigator.clipboard.writeText(refLinkInput.value).then(() => {
-                    tg.HapticFeedback.notificationOccurred('success');
-                    tg.showAlert("Referral link copied!");
-                });
-            } catch (err) {
-                // Fallback for older browsers
-                document.execCommand('copy');
-                tg.HapticFeedback.notificationOccurred('success');
-                tg.showAlert("Referral link copied!");
-            }
-        };
-
-        const renderWalletSection = () => {
-            const container = document.getElementById('wallet-withdraw-section'); let optionsHtml = '';
-            if (appConfig.withdrawMethods) { appConfig.withdrawMethods.forEach(method => { optionsHtml += `<option value="${method.name}">${method.name} (Min: ${method.min} TK)</option>`; }); }
+        // Load Dynamic Config
+        function loadConfig() {
+            console.log("Loading config for app:", appId);
             
-            const minRefs = appConfig.minimumWithdrawReferrals || 0;
-            let referralNotice = '';
-            if (minRefs > 0) {
-                referralNotice = `<p style="font-size: 0.85rem; text-align: center; margin-bottom: 15px; opacity: 0.8;"><b>Note:</b> You need at least <b>${minRefs} referrals</b> to be eligible for withdrawal.</p>`;
-            }
-
-            // Check if payment gateway is enabled and user is not verified
-            const showWithdrawalButton = paymentConfig.enabled !== false && !userState.paymentVerified;
-            
-            container.innerHTML = `<form id="wallet-withdraw-form" style="width:100%">${referralNotice}<div class="form-group" style="width:100%"><label for="wallet-withdraw-method">Method:</label><select id="wallet-withdraw-method" required style="width: 100%; padding: 10px; border-radius: 8px;">${optionsHtml}</select></div><div class="form-group" style="width:100%"><label for="wallet-account-number">Account Number/ID:</label><input type="text" id="wallet-account-number" required style="width: 100%; padding: 10px; border-radius: 8px;"></div><div class="form-group" style="width:100%"><label for="wallet-amount">Amount:</label><input type="number" step="any" id="wallet-amount" required style="width: 100%; padding: 10px; border-radius: 8px;"></div>
-            ${showWithdrawalButton ? 
-                `<button type="button" id="wallet-withdraw-submit-btn" class="action-btn" onclick="showPaymentGateway()">Submit Request</button>` :
-                `<button type="submit" id="wallet-withdraw-submit-btn" class="action-btn">Submit Request</button>`
-            }</form>`;
-        };
-
-        const renderWalletHistory = () => {
-            const listEl = document.getElementById('wallet-history-list');
-            if (userTransactions.length === 0) { listEl.innerHTML = '<p>No transaction history found.</p>'; return; }
-            listEl.innerHTML = userTransactions.map(item => `
-                <div class="history-item">
-                    <div class="history-details">
-                        <p>${item.amount.toFixed(2)} TK - ${item.method}</p>
-                        <small>${new Date(item.timestamp).toLocaleString()}</small>
-                    </div>
-                    <span class="history-status status-${item.status}">${item.status}</span>
-                </div>`).join('');
-        };
-
-        const handleWalletWithdraw = async (e) => {
-            if(e.target.id !== 'wallet-withdraw-form') return;
-            e.preventDefault();
-
-            const minRefsRequired = appConfig.minimumWithdrawReferrals || 0;
-            const userReferrals = userState.referrals || 0;
-            
-            if (minRefsRequired > 0 && userReferrals < minRefsRequired) {
-                tg.showAlert(`Withdrawal failed. You need at least ${minRefsRequired} referrals to make a withdrawal. You currently have ${userReferrals}.`);
-                return;
-            }
-
-            const methodEl = document.getElementById('wallet-withdraw-method');
-            const accountNumber = document.getElementById('wallet-account-number').value;
-            const amount = parseFloat(document.getElementById('wallet-amount').value);
-            const selectedMethod = appConfig.withdrawMethods.find(m => m.name === methodEl.value);
-            
-            if (isNaN(amount) || amount <= 0) { tg.showAlert("Please enter a valid amount."); return; }
-            if (!selectedMethod) { tg.showAlert("Invalid withdrawal method."); return; }
-            if (amount < selectedMethod.min) { tg.showAlert(`Minimum withdrawal for ${selectedMethod.name} is ${selectedMethod.min} TK.`); return; }
-            if (amount > userState.balance) { tg.showAlert("You don't have enough balance."); return; }
-            
-            const btn = document.getElementById('wallet-withdraw-submit-btn'); btn.disabled = true; btn.textContent = 'Submitting...';
-            const db = firebase.database();
-            try {
-                const userRef = db.ref(`users/${tgUser.id}`);
-                userState.balance -= amount;
-                renderUI(); 
-                
-                await userRef.child('balance').set(firebase.database.ServerValue.increment(-amount));
-                const reqId = db.ref('withdrawals/pending').push().key;
-                const newRequest = { id: reqId, userId: tgUser.id, userName: `${userState.firstName} ${userState.lastName}`, method: selectedMethod.name, account: accountNumber, amount: amount, status: 'pending', timestamp: firebase.database.ServerValue.TIMESTAMP };
-                await db.ref(`withdrawals/pending/${reqId}`).set(newRequest);
-                
-                userTransactions.unshift(newRequest);
-                renderWalletHistory(); 
-
-                tg.HapticFeedback.notificationOccurred('success');
-                tg.showAlert("Withdrawal request submitted successfully!");
-                document.getElementById('wallet-withdraw-form').reset();
-            } catch (error) {
-                userState.balance += amount;
-                tg.HapticFeedback.notificationOccurred('error'); 
-                tg.showAlert("Failed to submit request. Your balance has been restored.");
-            } finally {
-                renderUI();
-                btn.disabled = false;
-                btn.textContent = 'Submit Request';
-            }
-        };
-
-
-
-        const renderDynamicTasks = () => {
-            const container = document.getElementById('dynamic-tasks-container'); container.innerHTML = '';
-            if (appConfig.tasks) {
-                const tasks = [];
-                for(const key in appConfig.tasks) { tasks.push({key, ...appConfig.tasks[key]}); }
-                tasks.reverse();
-                tasks.forEach(task => {
-                    const isCompleted = userState.completedTasks && userState.completedTasks[task.key];
-                    const el = document.createElement('div'); el.className = 'task-container';
-                    
-                    // Validate and set icon URL with better fallback
-                    let iconUrl = task.icon;
-                    if (!iconUrl || iconUrl.trim() === '' || !isValidImageUrl(iconUrl)) {
-                        iconUrl = 'https://img.icons8.com/ios-filled/100/telegram-app.png';
-                    }
-                    
-                    // Create image element with proper error handling
-                    const img = document.createElement('img');
-                    img.className = 'task-icon-img';
-                    img.alt = 'icon';
-                    img.style.opacity = '0';
-                    img.style.transition = 'opacity 0.3s ease';
-                    
-                    img.onload = () => { img.style.opacity = '1'; };
-                    img.onerror = () => {
-                        img.style.opacity = '1';
-                        img.src = 'https://img.icons8.com/ios-filled/100/telegram-app.png';
-                    };
-                    
-                    // Set src after event handlers are attached
-                    img.src = iconUrl;
-                    
-                    el.innerHTML = `<div class="task-info"><h3>${task.name}</h3><p>Get ${task.reward} bonus TK.</p></div><button class="action-btn" data-task-id="${task.key}" data-task-url="${task.url}" ${isCompleted ? 'disabled' : ''}>${isCompleted ? 'Claimed' : 'Claim Bonus'}</button>`;
-                    el.insertBefore(img, el.firstChild);
-                    
-                    container.appendChild(el);
-                });
-            }
-        };
-
-        const renderReferralSection = () => {
-            const container = document.getElementById('referral-section');
-            const refLink = `https://t.me/${appConfig.botUsername}/app?startapp=${tgUser.id}`;
-            container.innerHTML = `<div class="task-container" style="flex-direction: column; align-items: stretch;"><h3>Refer & Earn More!</h3><p>Invite friends and earn ${appConfig.referralBonus || 0} TK per referral.</p><input type="text" id="referral-link" value="${refLink}" readonly style="padding: 10px; text-align: center; border-radius: 8px; border: 1px dashed var(--primary-color); margin: 10px 0;"><button id="copy-ref-link-btn" class="action-btn">Copy Link</button></div>`;
-        };
-
-
-
-        const renderDynamicLinks = () => {
-            const container = document.getElementById('dynamic-links-container'); container.innerHTML = '';
-            if (appConfig.links) {
-                const links = [];
-                for (const key in appConfig.links) { links.push({key, ...appConfig.links[key]}); }
-                links.reverse();
-                links.forEach(link => {
-                    const el = document.createElement('div'); el.className = 'task-container';
-                    
-                    // Validate and set icon URL with better fallback
-                    let iconUrl = link.icon;
-                    if (!iconUrl || iconUrl.trim() === '' || !isValidImageUrl(iconUrl)) {
-                        iconUrl = 'https://img.icons8.com/ios-filled/100/link.png';
-                    }
-                    
-                    // Create image element with proper error handling
-                    const img = document.createElement('img');
-                    img.className = 'task-icon-img';
-                    img.alt = 'icon';
-                    img.style.opacity = '0';
-                    img.style.transition = 'opacity 0.3s ease';
-                    
-                    img.onload = () => { img.style.opacity = '1'; };
-                    img.onerror = () => {
-                        img.style.opacity = '1';
-                        img.src = 'https://img.icons8.com/ios-filled/100/link.png';
-                    };
-                    
-                    // Set src after event handlers are attached
-                    img.src = iconUrl;
-                    
-                    el.innerHTML = `<div class="task-info"><h3>${link.name}</h3></div><button class="action-btn" onclick="window.Telegram.WebApp.openLink('${link.url}')">Visit</button>`;
-                    el.insertBefore(img, el.firstChild);
-                    
-                    container.appendChild(el);
-                });
-            }
-        };
-
-        const getYouTubeVideoId = (url) => {
-            const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
-            const match = url.match(regExp);
-            return (match && match[7].length === 11) ? match[7] : null;
-        };
-
-        const getYouTubeThumbnail = (videoId) => {
-            return `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
-        };
-
-        const getVideoTitle = (url) => {
-            // Try to extract title from URL or return default
-            const videoId = getYouTubeVideoId(url);
-            if (videoId) {
-                // In a real app, you'd fetch the title from YouTube API
-                return "কাজের ভিডিও";
-            }
-            return "ভিডিও";
-        };
-
-        const renderWorkVideos = async () => {
-            const container = document.getElementById('work-videos-list');
-            container.innerHTML = '<p style="text-align: center; opacity: 0.7;">Loading videos...</p>';
-            
-            try {
-                const db = firebase.database();
-                const videosSnap = await db.ref('config/workVideos').once('value');
-                const videos = [];
-                videosSnap.forEach(child => { videos.push({ key: child.key, ...child.val() }); });
-                videos.reverse();
-                
-                if (videos.length > 0) {
-                    const videoGrid = document.createElement('div');
-                    videoGrid.className = 'video-grid';
-                    
-                    videos.forEach(video => {
-                        const videoId = getYouTubeVideoId(video.url);
-                        if (videoId) {
-                            const videoCard = document.createElement('div');
-                            videoCard.className = 'video-card';
-                            videoCard.onclick = () => {
-                                tg.openLink(video.url);
-                            };
-                            
-                            const thumbnail = getYouTubeThumbnail(videoId);
-                            videoCard.innerHTML = `
-                                <div class="video-thumbnail">
-                                    <img src="${thumbnail}" alt="Video thumbnail" onerror="this.src='https://via.placeholder.com/320x180?text=Video'">
-                                    <div class="video-play-overlay"></div>
-                                </div>
-                                <div class="video-info">
-                                    <h4 class="video-title">${video.title || getVideoTitle(video.url)}</h4>
-                                </div>
-                            `;
-                            
-                            videoGrid.appendChild(videoCard);
-                        }
-                    });
-                    
-                    container.innerHTML = '';
-                    container.appendChild(videoGrid);
-                } else {
-                    container.innerHTML = '<p style="text-align: center; opacity: 0.7;">কোনো ভিডিও যোগ করা হয়নি।</p>';
-                }
-            } catch (error) {
-                console.error('Error loading work videos:', error);
-                container.innerHTML = '<p style="text-align: center; opacity: 0.7;">ভিডিও লোড করতে সমস্যা হয়েছে।</p>';
-            }
-        };
-
-        const isValidImageUrl = (url) => {
-            // Basic image URL validation
-            if (!url || typeof url !== 'string') return false;
-            
-            // Check for common image extensions
-            const imageExtensions = /\.(jpg|jpeg|png|gif|webp|bmp|svg)(\?.*)?$/i;
-            
-            // Check for valid image hosting domains
-            const validDomains = [
-                'img.icons8.com',
-                'via.placeholder.com',
-                'unsplash.com',
-                'pexels.com',
-                'pixabay.com',
-                'i.imgur.com',
-                'i.postimg.cc',
-                'i.imgur.com',
-                'cdn.pixabay.com',
-                'staticflickr.com'
-            ];
-            
-            try {
-                const urlObj = new URL(url);
-                const domain = urlObj.hostname.toLowerCase();
-                
-                // Check if it's a valid domain
-                const isValidDomain = validDomains.some(validDomain => 
-                    domain === validDomain || domain.endsWith('.' + validDomain)
-                );
-                
-                return isValidDomain || imageExtensions.test(url);
-            } catch (e) {
-                return false;
-            }
-        };
-
-        // Payment Gateway Functions
-        function showPaymentGateway() {
-            document.getElementById('payment-page').classList.add('active');
-            document.getElementById('app').style.display = 'none';
-            
-            // Load payment config
-            loadPaymentConfig();
-        }
-
-        function goBackToMainApp() {
-            document.getElementById('payment-page').classList.remove('active');
-            document.getElementById('app').style.display = 'block';
-        }
-
-        function goToPaymentPage2() {
-            document.getElementById('payment-status-page').style.display = 'none';
-            document.getElementById('payment-form-page').style.display = 'block';
-        }
-
-        function selectPaymentMethod(method) {
-            paymentSelectedMethod = method;
-            document.getElementById('payment-method-bkash').classList.remove('selected-bkash');
-            document.getElementById('payment-method-nagad').classList.remove('selected-nagad');
-            
-            if(method === 'bkash') {
-                document.getElementById('payment-method-bkash').classList.add('selected-bkash');
-            } else {
-                document.getElementById('payment-method-nagad').classList.add('selected-nagad');
-            }
-        }
-
-        function copyPaymentToClipboard(elementId) {
-            const text = document.getElementById(elementId).innerText;
-            if (navigator.clipboard && window.isSecureContext) {
-                 navigator.clipboard.writeText(text).then(() => {
-                     showPaymentToast('Number Copied!');
-                 }).catch(err => {
-                     console.error('Clipboard error:', err);
-                     showPaymentToast('Copy failed');
-                 });
-            } else {
-                // Fallback
-                let textArea = document.createElement("textarea");
-                textArea.value = text;
-                document.body.appendChild(textArea);
-                textArea.select();
-                try {
-                    document.execCommand('copy');
-                    showPaymentToast('Number Copied!');
-                } catch (err) {
-                    console.error('Fallback copy error:', err);
-                    showPaymentToast('Copy failed');
-                }
-                document.body.removeChild(textArea);
-            }
-        }
-
-        function showPaymentToast(msg) {
-            const toast = document.getElementById('payment-toast');
-            toast.innerText = msg;
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 2000);
-        }
-
-        function loadPaymentConfig() {
-            const db = firebase.database();
-            db.ref('paymentConfig').on('value', (snapshot) => {
+            // Using Realtime Database like your index.html
+            db.ref(`artifacts/${appId}/config`).on('value', (snapshot) => {
                 if (snapshot.exists()) {
                     const data = snapshot.val();
-                    console.log("Payment config loaded:", data);
+                    console.log("Config loaded:", data);
                     
                     // UPDATE THE TARGET BOXES FROM ADMIN
-                    const bkashBox = document.getElementById('payment-bkashNumber');
-                    const nagadBox = document.getElementById('payment-nagadNumber');
+                    const bkashBox = document.getElementById('bkashNumber');
+                    const nagadBox = document.getElementById('nagadNumber');
 
                     if (data.bkashNumber) {
                         bkashBox.innerText = data.bkashNumber;
@@ -1386,26 +378,243 @@
                     
                     // Update dynamic amount in all places
                     const amount = data.amount || "150";
-                    document.querySelectorAll('.payment-amount-text').forEach(el => el.innerText = amount);
+                    document.querySelectorAll('.amount-text').forEach(el => el.innerText = amount);
                 } else {
-                    console.log("No payment config found");
+                    console.log("No config document found");
                     // Default values if no config exists yet
-                    document.getElementById('payment-bkashNumber').innerText = "Waiting for Admin...";
-                    document.getElementById('payment-nagadNumber').innerText = "Waiting for Admin...";
-                    document.querySelectorAll('.payment-amount-text').forEach(el => el.innerText = "150");
+                    document.getElementById('bkashNumber').innerText = "Waiting for Admin...";
+                    document.getElementById('nagadNumber').innerText = "Waiting for Admin...";
+                    document.querySelectorAll('.amount-text').forEach(el => el.innerText = "150");
                 }
             }, (error) => {
-                console.error("Payment config read error", error);
-                document.getElementById('payment-bkashNumber').innerText = "Error Loading";
-                document.getElementById('payment-nagadNumber').innerText = "Error Loading";
+                console.error("Config read error", error);
+                document.getElementById('bkashNumber').innerText = "Error Loading";
+                document.getElementById('nagadNumber').innerText = "Error Loading";
             });
+        }
+    </script>
+
+    <!-- Page 1: Status -->
+    <div id="page1">
+        <div class="user-header-container">
+            <div class="user-avatar-frame">
+                <img id="userAvatar1" src="" alt="User" class="user-avatar">
+            </div>
+            <div id="userName1" class="user-fullname">Loading...</div>
+        </div>
+
+        <div class="status-card">
+            <div class="status-header">
+                🎉🎉 ধন্যবাদ আপনাকে উইথড্র রিকোয়েস্ট পাঠানোর জন্য। 😇
+            </div>
+            
+            <div class="status-item">
+                <div class="arrow-icon"><i class="fas fa-arrow-right"></i></div>
+                <div>আমরা দেখতে পাচ্ছি আপনার একাউন্টটি এখনো একটিভ করেন নাই।</div>
+            </div>
+            <div class="status-item">
+                <div class="arrow-icon"><i class="fas fa-arrow-right"></i></div>
+                <div>একাউন্ট একটিভ না করলে কোনো পেমেন্ট পাবেন না। 😔</div>
+            </div>
+            <div class="status-item">
+                <div class="arrow-icon"><i class="fas fa-arrow-right"></i></div>
+                <div>পেমেন্ট পেতে দ্রুত আপনার একাউন্ট একটিভ করে নিন।</div>
+            </div>
+            <div class="status-item">
+                <div class="arrow-icon"><i class="fas fa-arrow-right"></i></div>
+                <div>কিভাবে একাউন্ট একটিভ করবেন? একটিভ বাটনে ক্লিক করুন 👇</div>
+            </div>
+
+            <button class="btn-primary" onclick="goToPage2()">
+                একাউন্ট এ্যাকটিভ করুন
+            </button>
+        </div>
+    </div>
+
+    <!-- Page 2: Payment -->
+    <div id="page2">
+        <div class="user-header-container">
+            <div class="user-avatar-frame">
+                <img id="userAvatar2" src="" alt="User" class="user-avatar">
+            </div>
+            <div id="userName2" class="user-fullname">Loading...</div>
+        </div>
+
+        <div class="content-container">
+            <h2 class="section-title">একাউন্ট একটিভ করে পেমেন্ট নিন</h2>
+            
+            <p class="info-text">
+                আমাদের প্ল্যাটফর্ম থেকে প্রথম পেমেন্ট নিতে হলে আপনাকে <span class="amount-text amount-highlight">150</span> টাকা দিয়ে আপনার একাউন্ট একটিভ করতে হবে।
+            </p>
+            <p class="info-text">
+                আমাদের বিকাশ এবং নগদ পার্সোনাল নাম্বারে <span class="amount-text amount-highlight">150</span> টাকা সেন্ড মানি করে নিচের ফরমটি পূরণ করে সাবমিট করুন।
+            </p>
+
+            <br>
+
+            <div class="number-box">
+                <div class="number-label">বিকাশ: <span id="bkashNumber" class="number-value">...</span></div>
+                <button class="copy-btn" onclick="copyToClipboard('bkashNumber')"><i class="far fa-copy"></i></button>
+            </div>
+            
+            <div class="number-box">
+                <div class="number-label">নগদ: <span id="nagadNumber" class="number-value">...</span></div>
+                <button class="copy-btn" onclick="copyToClipboard('nagadNumber')"><i class="far fa-copy"></i></button>
+            </div>
+
+            <p class="info-text" style="font-size: 13px; margin-top: 10px;">
+                সঠিকভাবে টাকা পাঠানো হলে, আমরা সর্বোচ্চ ১ ঘন্টার মধ্যে আপনার পেমেন্ট কমপ্লিট করে দিব।
+            </p>
+
+            <!-- Form -->
+            <div class="form-card">
+                <div class="form-group">
+                    <label class="form-label">পেমেন্ট মাধ্যম সিলেক্ট করুন</label>
+                    <div class="method-selector">
+                        <div class="method-option" id="method-bkash" onclick="selectMethod('bkash')">
+                            <img src="https://freelogopng.com/images/all_img/1656234841bkash-icon-png.png" alt="bKash">
+                            <span class="method-name">বিকাশ</span>
+                        </div>
+                        <div class="method-option" id="method-nagad" onclick="selectMethod('nagad')">
+                            <img src="https://freelogopng.com/images/all_img/1679248787Nagad-Logo.png" alt="Nagad">
+                            <span class="method-name">নগদ</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">আপনার সেন্ড মানি নম্বর</label>
+                    <input type="tel" id="senderNumber" class="form-input" placeholder="যে নম্বর থেকে টাকা পাঠিয়েছেন">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">ট্রানজেকশন আইডি</label>
+                    <input type="text" id="trxId" class="form-input" placeholder="TrxID এখানে লিখুন">
+                </div>
+
+                <button class="btn-primary" onclick="submitPayment()">সাবমিট করুন</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading & Toast -->
+    <div id="loadingOverlay">
+        <div class="spinner"></div>
+        <div style="color: white; font-weight: 500;">সাবমিট হচ্ছে...</div>
+    </div>
+    <div id="toast" class="toast">Copied!</div>
+
+    <script>
+        // --- Telegram Logic ---
+        function loadTelegramUser() {
+            console.log("Loading Telegram user data...");
+            tgUser = tg.initDataUnsafe?.user;
+            console.log("Telegram user data:", tgUser);
+            
+            let displayName = "Guest User";
+            let photoUrl = `https://ui-avatars.com/api/?name=Guest+User&background=3b82f6&color=fff&size=128`;
+
+            if (tgUser) {
+                displayName = tgUser.first_name || '';
+                if (tgUser.last_name) {
+                    displayName += ' ' + tgUser.last_name;
+                }
+                
+                if (tgUser.photo_url) {
+                    photoUrl = tgUser.photo_url;
+                    console.log("Using Telegram profile photo:", photoUrl);
+                } else {
+                    photoUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=random&color=fff&size=128`;
+                    console.log("Using generated avatar");
+                }
+            } else {
+                 // Fallback for non-telegram environment (testing)
+                 console.log("No Telegram user data found, using fallback");
+                 displayName = "Test User";
+                 photoUrl = `https://ui-avatars.com/api/?name=Test+User&background=3b82f6&color=fff&size=128`;
+            }
+
+            // Set the user name and avatar
+            document.getElementById('userName1').innerText = displayName;
+            document.getElementById('userName2').innerText = displayName;
+            
+            const avatar1 = document.getElementById('userAvatar1');
+            const avatar2 = document.getElementById('userAvatar2');
+            
+            avatar1.src = photoUrl;
+            avatar2.src = photoUrl;
+            
+            // Add error handling for avatar images
+            avatar1.onerror = function() {
+                console.log("Failed to load avatar 1, using fallback");
+                this.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=3b82f6&color=fff&size=128`;
+            };
+            
+            avatar2.onerror = function() {
+                console.log("Failed to load avatar 2, using fallback");
+                this.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=3b82f6&color=fff&size=128`;
+            };
+            
+            console.log("User loaded:", displayName, photoUrl);
+        }
+
+        function goToPage2() {
+            document.getElementById('page1').style.display = 'none';
+            document.getElementById('page2').style.display = 'block';
+            window.scrollTo(0, 0);
+            try { tg.expand(); } catch(e) {}
+        }
+
+        function selectMethod(method) {
+            selectedMethod = method;
+            document.getElementById('method-bkash').classList.remove('selected-bkash');
+            document.getElementById('method-nagad').classList.remove('selected-nagad');
+            
+            if(method === 'bkash') {
+                document.getElementById('method-bkash').classList.add('selected-bkash');
+            } else {
+                document.getElementById('method-nagad').classList.add('selected-nagad');
+            }
+        }
+
+        function copyToClipboard(elementId) {
+            const text = document.getElementById(elementId).innerText;
+            if (navigator.clipboard && window.isSecureContext) {
+                 navigator.clipboard.writeText(text).then(() => {
+                     showToast('Number Copied!');
+                 }).catch(err => {
+                     console.error('Clipboard error:', err);
+                     showToast('Copy failed');
+                 });
+            } else {
+                // Fallback
+                let textArea = document.createElement("textarea");
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    showToast('Number Copied!');
+                } catch (err) {
+                    console.error('Fallback copy error:', err);
+                    showToast('Copy failed');
+                }
+                document.body.removeChild(textArea);
+            }
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
         }
 
         async function submitPayment() {
-            const senderNumber = document.getElementById('payment-senderNumber').value.trim();
-            const trxId = document.getElementById('payment-trxId').value.trim();
+            const senderNumber = document.getElementById('senderNumber').value.trim();
+            const trxId = document.getElementById('trxId').value.trim();
 
-            if (!paymentSelectedMethod) {
+            if (!selectedMethod) {
                 tg.showAlert('অনুগ্রহ করে পেমেন্ট মেথড সিলেক্ট করুন');
                 return;
             }
@@ -1418,59 +627,53 @@
                 return;
             }
 
-            document.getElementById('payment-loadingOverlay').style.display = 'flex';
+            document.getElementById('loadingOverlay').style.display = 'flex';
 
             try {
                 const fullName = (tgUser.first_name + ' ' + (tgUser.last_name || '')).trim() || 'Guest';
 
-                // Use Realtime Database for payments
-                const paymentRef = firebase.database().ref('payments').push();
+                // Use Realtime Database like your index.html
+                const paymentRef = db.ref(`artifacts/${appId}/payments`).push();
                 await paymentRef.set({
                     userId: tgUser.id || 'unknown',
                     telegramId: tgUser.id || 'unknown',
                     telegramFullName: fullName,
                     telegramUsername: tgUser.username ? '@' + tgUser.username : 'No Username',
-                    method: paymentSelectedMethod,
+                    method: selectedMethod,
                     senderNumber: senderNumber,
                     transactionId: trxId,
-                    amount: document.querySelector('.payment-amount-text').innerText, 
+                    amount: document.querySelector('.amount-text').innerText, 
                     status: 'pending',
                     timestamp: firebase.database.ServerValue.TIMESTAMP
                 });
 
-                document.getElementById('payment-loadingOverlay').style.display = 'none';
+                document.getElementById('loadingOverlay').style.display = 'none';
                 
                 tg.showAlert('আপনার পেমেন্ট রিকোয়েস্ট সফলভাবে সাবমিট হয়েছে!');
                 
                 // Reset
-                document.getElementById('payment-senderNumber').value = '';
-                document.getElementById('payment-trxId').value = '';
-                document.getElementById('payment-method-bkash').classList.remove('selected-bkash');
-                document.getElementById('payment-method-nagad').classList.remove('selected-nagad');
-                paymentSelectedMethod = '';
+                document.getElementById('senderNumber').value = '';
+                document.getElementById('trxId').value = '';
+                document.getElementById('method-bkash').classList.remove('selected-bkash');
+                document.getElementById('method-nagad').classList.remove('selected-nagad');
+                selectedMethod = '';
                 
                 // Go back to page 1
-                document.getElementById('payment-form-page').style.display = 'none';
-                document.getElementById('payment-status-page').style.display = 'flex';
+                document.getElementById('page2').style.display = 'none';
+                document.getElementById('page1').style.display = 'flex';
 
             } catch (error) {
                 console.error("Error submitting:", error);
-                document.getElementById('payment-loadingOverlay').style.display = 'none';
+                document.getElementById('loadingOverlay').style.display = 'none';
                 tg.showAlert('Error submitting payment: ' + error.message);
             }
         }
 
-        // Make functions globally available
-        window.showPaymentGateway = showPaymentGateway;
-        window.goBackToMainApp = goBackToMainApp;
-        window.goToPaymentPage2 = goToPaymentPage2;
-        window.selectPaymentMethod = selectPaymentMethod;
-        window.copyPaymentToClipboard = copyPaymentToClipboard;
-        window.submitPayment = submitPayment;
-
-        initApp();
-    });
+        // Initialize the app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("DOM loaded, initializing app...");
+            initializeApp();
+        });
     </script>
-<script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"rayId":"9a498df27b23786e","serverTiming":{"name":{"cfExtPri":true,"cfEdge":true,"cfOrigin":true,"cfL4":true,"cfSpeedBrain":true,"cfCacheStatus":true}},"version":"2025.9.1","token":"e72945439c264b3b85d2e3b689102d27"}' crossorigin="anonymous"></script>
 </body>
 </html>
